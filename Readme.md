@@ -5,7 +5,7 @@ RGB utility for HyperX Alloy Origins 60 keyboard
 ## Installation
 
 ```bash
-cargo install --git https://github.com/EriksRemess/hyperrust.git hyperrust
+cargo install hyperrust
 ```
 
 ## Usage
