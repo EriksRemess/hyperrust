@@ -1,7 +1,13 @@
 [package]
 name = "hyperrust"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+description = "RGB utility for HyperX Alloy Origins 60 keyboard"
+license = "MIT"
+repository = "https://github.com/EriksRemess/hyperrust"
+readme = "README.md"
+keywords = ["hyperx", "keyboard", "rgb", "cli", "utility"]
+categories = ["command-line-utilities", "hardware-support"]
 
 [dependencies]
 clap = { version = "4.5.16", features = ["derive"] }
