@@ -87,7 +87,6 @@ fn pad_color(color: &str) -> String {
 
 fn main() {
     let args = Args::parse();
-
     let mut rainbow_colors: [&str; 71] = [
       "ff0000", "ff1500", "ff2b00", "ff4000", "ff5600", "ff6b00", "ff8100", "ff9600",
       "ffac00", "ffc100", "ffd700", "ffec00", "f8fb00", "e6ff00", "d0ff00", "bbff00",
@@ -99,8 +98,6 @@ fn main() {
       "b800ff", "ce00ff", "e300ff", "f700fd", "fe00ef", "ff00d9", "ff00c4", "ff00ae",
       "ff0099", "ff0083", "ff006d", "ff0058", "ff0042", "ff002d", "ff0017"
     ];
-
-
     let api = HidApi::new().expect("Failed to create HID API");
     let mut found = false;
     for dev in api.device_list() {
@@ -131,5 +128,8 @@ fn main() {
                 }
             }
         }
+    }
+    if !found {
+        println!("HyperX Alloy Origins 60 keyboard not found");
     }
 }
