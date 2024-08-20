@@ -11,6 +11,8 @@ categories = ["command-line-utilities", "hardware-support"]
 
 [dependencies]
 clap = { version = "4.5.16", features = ["derive"] }
-crossterm = "0.28.1"
 hidapi = { version = "2.6.3", features = ["macos-shared-device"] }
 rand = "0.8.5"
+
+[profile.release]
+strip = true

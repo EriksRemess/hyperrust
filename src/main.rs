@@ -119,10 +119,26 @@ fn get_color_chunks(colors: Vec<String>, chunk_size: usize) -> Vec<Vec<String>> 
     .collect()
 }
 
+fn sleep(ms: u64) {
+  thread::sleep(Duration::from_millis(ms));
+}
+
 #[allow(unused_assignments)]
 fn main() {
   let args = Args::parse();
   let mut rainbow_colors = generate_rainbow_colors(71);
+  let theme: Vec<String> = vec![
+  // UNUSED   ESC       1         2         3         4         5         6         7         8         9         0         -         =         UNUSED    BACKSPACE
+    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+  // TAB      Q         W         E         R         T         Y         U         I         O         P         [         ]         BACKSLASH
+    "FFFFFF", "FFFFFF", "FF0000", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+  // CAPSLOCK A         S         D         F         G         H         J         K         L         ;         '         UNUSED    ENTER
+    "FFFFFF", "FF0000", "FF0000", "FF0000", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+  // LSHIFT   UNUSED    Z         X         C         V         B         N         M         ,         .         /         UNUSED    RSHIFT
+    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+  // LCTRL    SUPER     LALT      LSPACE    SPACE     RSPACE    RALT      MENU      RCTRL     UNUSED    UNUSED    UNUSED    RFUNC
+    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF"
+  ].into_iter().map(String::from).collect();
   let api = HidApi::new().expect("Failed to create HID API");
   let mut found = false;
   for dev in api.device_list() {
@@ -140,19 +156,20 @@ fn main() {
               let color_chunks: Vec<Vec<String>> = get_color_chunks(rainbow_colors.clone(), 16);
               for (_i, chunk) in color_chunks.iter().enumerate() {
                 send_color_chunk(&device, chunk);
-                thread::sleep(Duration::from_millis(25));
+                sleep(25);
               }
               rainbow_colors.rotate_left(1);
             } else if let Some(ref color) = args.color {
               let color = pad_color(color.as_str());
               for _ in 0..5 {
                 send_color(&device, get_color_value(&color));
-                thread::sleep(Duration::from_millis(50));
+                sleep(50);
               }
             } else {
-              for _ in 0..5 {
-                send_color(&device, random_rgb());
-                thread::sleep(Duration::from_millis(50));
+              let color_chunks: Vec<Vec<String>> = get_color_chunks(theme.clone(), 16);
+              for (_i, chunk) in color_chunks.iter().enumerate() {
+                send_color_chunk(&device, chunk);
+                sleep(25);
               }
             }
             let _ = send_init_packet(&device);
