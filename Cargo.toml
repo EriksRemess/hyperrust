@@ -1,6 +1,6 @@
 [package]
 name = "hyperrust"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
 description = "RGB utility for HyperX Alloy Origins 60 keyboard"
 license = "MIT"
@@ -12,7 +12,9 @@ categories = ["command-line-utilities", "hardware-support"]
 [dependencies]
 clap = { version = "4.5.16", features = ["derive"] }
 hidapi = { version = "2.6.3", features = ["macos-shared-device"] }
-rand = "0.8.5"
 
 [profile.release]
 strip = true
+lto = true
+opt-level = 3
+debug = false

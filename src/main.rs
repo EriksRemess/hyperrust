@@ -2,7 +2,6 @@ extern crate hidapi;
 use clap::Parser;
 use hidapi::HidApi;
 use hidapi::HidDevice;
-use rand::Rng;
 use std::thread;
 use std::time::Duration;
 
@@ -17,54 +16,12 @@ struct Args {
   color: Option<String>,
 }
 
-fn send_init_packet(device: &HidDevice) -> Result<(), String> {
-  let mut req = [0u8; 65];
-  req[0x00] = 0x00;
-  req[0x01] = 0x04;
-  req[0x02] = 0xF2;
-  req[0x09] = 0x05;
-  match device.send_feature_report(&req) {
-    Ok(_) => Ok(()),
-    Err(e) => Err(format!("Failed to send feature report: {}", e)),
-  }
-}
-
-fn send_color(device: &HidDevice, color: u32) {
-  let mut req = [0u8; 65];
-  req[0x00] = 0x00;
-  for i in 0..16 {
-    req[(i * 4) + 1] = 0x81;
-    req[(i * 4) + 2] = ((color >> 16) & 0x000000FF) as u8;
-    req[(i * 4) + 3] = ((color >> 8) & 0x000000FF) as u8;
-    req[(i * 4) + 4] = (color & 0x000000FF) as u8;
-  }
-
-  device
-    .send_feature_report(&req)
-    .expect("Failed to send feature report");
-}
-
 fn get_color_value(color: &str) -> u32 {
   u32::from_str_radix(color, 16).expect("Invalid hex color")
 }
 
-fn send_color_chunk(device: &HidDevice, chunk: &Vec<std::string::String>) {
-  let mut req = [0u8; 65];
-  req[0x00] = 0x00;
-  for (i, color) in chunk.iter().enumerate() {
-    let color_value = get_color_value(color);
-    req[(i * 4) + 1] = 0x81;
-    req[(i * 4) + 2] = ((color_value >> 16) & 0x000000FF) as u8;
-    req[(i * 4) + 3] = ((color_value >> 8) & 0x000000FF) as u8;
-    req[(i * 4) + 4] = (color_value & 0x000000FF) as u8;
-  }
-  device
-    .send_feature_report(&req)
-    .expect("Failed to send feature report");
-}
-
-fn random_rgb() -> u32 {
-  rand::thread_rng().gen_range(0..=0xFFFFFF)
+fn rgb_to_hex(r: u8, g: u8, b: u8) -> String {
+  format!("{:02x}{:02x}{:02x}", r, g, b)
 }
 
 fn pad_color(color: &str) -> String {
@@ -98,8 +55,45 @@ fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
   (r, g, b)
 }
 
-fn rgb_to_hex(r: u8, g: u8, b: u8) -> String {
-  format!("{:02x}{:02x}{:02x}", r, g, b)
+fn send_init_packet(device: &HidDevice) -> Result<(), String> {
+  let mut req = [0u8; 65];
+  req[0x00] = 0x00;
+  req[0x01] = 0x04;
+  req[0x02] = 0xF2;
+  req[0x09] = 0x05;
+  match device.send_feature_report(&req) {
+    Ok(_) => Ok(()),
+    Err(e) => Err(format!("Failed to send feature report: {}", e)),
+  }
+}
+
+fn send_color(device: &HidDevice, color: u32) {
+  let mut req = [0u8; 66];
+  req[0x00] = 0x00;
+  for i in 0..16 {
+    req[(i * 4) + 1] = 0x81; // probably ignored, not really sure if changing this does anything
+    req[(i * 4) + 2] = ((color >> 16) & 0x000000FF) as u8;
+    req[(i * 4) + 3] = ((color >> 8) & 0x000000FF) as u8;
+    req[(i * 4) + 4] = (color & 0x000000FF) as u8;
+  }
+  device
+    .send_feature_report(&req)
+    .expect("Failed to send feature report");
+}
+
+fn send_color_chunk(device: &HidDevice, chunk: &Vec<std::string::String>) {
+  let mut req = [0u8; 65];
+  req[0x00] = 0x00;
+  for (i, color) in chunk.iter().enumerate() {
+    let color_value = get_color_value(color);
+    req[(i * 4) + 1] = 0x81;
+    req[(i * 4) + 2] = ((color_value >> 16) & 0x000000FF) as u8;
+    req[(i * 4) + 3] = ((color_value >> 8) & 0x000000FF) as u8;
+    req[(i * 4) + 4] = (color_value & 0x000000FF) as u8;
+  }
+  device
+    .send_feature_report(&req)
+    .expect("Failed to send feature report");
 }
 
 fn generate_rainbow_colors(color_count: usize) -> Vec<String> {
@@ -129,15 +123,15 @@ fn main() {
   let mut rainbow_colors = generate_rainbow_colors(71);
   let theme: Vec<String> = vec![
   // UNUSED   ESC       1         2         3         4         5         6         7         8         9         0         -         =         UNUSED    BACKSPACE
-    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+    "FF9700", "00FF6E", "FF9700", "FF9700", "FF9700", "FF9700", "00FF6E", "00FF6E", "00FF6E", "00FF6E", "FF9700", "FF9700", "FF9700", "FF9700", "00FF6E", "00FF6E",
   // TAB      Q         W         E         R         T         Y         U         I         O         P         [         ]         BACKSLASH
-    "FFFFFF", "FFFFFF", "FF0000", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+    "00FF6E", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "00FF6E",
   // CAPSLOCK A         S         D         F         G         H         J         K         L         ;         '         UNUSED    ENTER
-    "FFFFFF", "FF0000", "FF0000", "FF0000", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+    "00FF6E", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "00FF6E",
   // LSHIFT   UNUSED    Z         X         C         V         B         N         M         ,         .         /         UNUSED    RSHIFT
-    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF",
+    "00FF6E", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "FF9700", "00FF6E",
   // LCTRL    SUPER     LALT      LSPACE    SPACE     RSPACE    RALT      MENU      RCTRL     UNUSED    UNUSED    UNUSED    RFUNC
-    "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF", "FFFFFF"
+    "00FF6E", "00FF6E", "00FF6E", "FF9700", "FF9700", "FF9700", "00FF6E", "00FF6E", "00FF6E", "FF9700", "FF9700", "FF9700", "00FF6E"
   ].into_iter().map(String::from).collect();
   let api = HidApi::new().expect("Failed to create HID API");
   let mut found = false;
@@ -169,7 +163,7 @@ fn main() {
               let color_chunks: Vec<Vec<String>> = get_color_chunks(theme.clone(), 16);
               for (_i, chunk) in color_chunks.iter().enumerate() {
                 send_color_chunk(&device, chunk);
-                sleep(25);
+                sleep(50);
               }
             }
             let _ = send_init_packet(&device);
