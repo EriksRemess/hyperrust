@@ -16,6 +16,10 @@ struct Args {
   color: Option<String>,
 }
 
+fn is_hex(color: &str) -> bool {
+  color.chars().all(|c| c.is_digit(16))
+}
+
 fn get_color_value(color: &str) -> u32 {
   u32::from_str_radix(color, 16).expect("Invalid hex color")
 }
@@ -120,6 +124,15 @@ fn sleep(ms: u64) {
 #[allow(unused_assignments)]
 fn main() {
   let args = Args::parse();
+  let color = args.color.unwrap_or_default();
+  if args.rainbow && color.len() > 0 {
+    eprintln!("Invalid arguments, either use --rainbow or --color");
+    return;
+  }
+  if !is_hex(color.as_str()) {
+    eprintln!("Invalid color, must be a valid hex color");
+    return;
+  }
   let mut rainbow_colors = generate_rainbow_colors(71);
   let theme: Vec<String> = vec![
   // UNUSED   ESC       1         2         3         4         5         6         7         8         9         0         -         =         UNUSED    BACKSPACE
@@ -153,7 +166,7 @@ fn main() {
                 sleep(25);
               }
               rainbow_colors.rotate_left(1);
-            } else if let Some(ref color) = args.color {
+            } else if color.len() > 0 {
               let color = pad_color(color.as_str());
               for _ in 0..5 {
                 send_color(&device, get_color_value(&color));
