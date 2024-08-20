@@ -4,6 +4,7 @@ use hidapi::HidApi;
 use hidapi::HidDevice;
 use std::thread;
 use std::time::Duration;
+use std::process;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -82,7 +83,10 @@ fn send_color(device: &HidDevice, color: u32) {
   }
   device
     .send_feature_report(&req)
-    .expect("Failed to send feature report");
+    .unwrap_or_else(|err| {
+      eprintln!("Failed to send feature report: {}", err);
+      process::exit(1);
+    });
 }
 
 fn send_color_chunk(device: &HidDevice, chunk: &Vec<std::string::String>) {
@@ -97,7 +101,10 @@ fn send_color_chunk(device: &HidDevice, chunk: &Vec<std::string::String>) {
   }
   device
     .send_feature_report(&req)
-    .expect("Failed to send feature report");
+    .unwrap_or_else(|err| {
+      eprintln!("Failed to send feature report: {}", err);
+      process::exit(1);
+    });
 }
 
 fn generate_rainbow_colors(color_count: usize) -> Vec<String> {
@@ -182,10 +189,14 @@ fn main() {
             let _ = send_init_packet(&device);
           }
         }
+      } else {
+        eprintln!("Failed to open device");
+        process::exit(1);
       }
     }
   }
   if !found {
     println!("HyperX Alloy Origins 60 keyboard not found");
+    process::exit(1);
   }
 }
