@@ -48,7 +48,7 @@ fn get_color_value(color: &str) -> u32 {
   u32::from_str_radix(color, 16).expect("Invalid hex color")
 }
 
-fn send_color_chunk(device: &HidDevice, chunk: &[&str]) {
+fn send_color_chunk(device: &HidDevice, chunk: &Vec<std::string::String>) {
   let mut req = [0u8; 65];
   req[0x00] = 0x00;
   for (i, color) in chunk.iter().enumerate() {
@@ -86,19 +86,43 @@ fn pad_color(color: &str) -> String {
   color
 }
 
+fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {
+  let a = s * f64::min(l, 1.0 - l);
+  let f = |n: f64| {
+    let k = (n + h / 30.0) % 12.0;
+    l - a * f64::max(-1.0, f64::min(f64::min(k - 3.0, 9.0 - k), 1.0))
+  };
+  let r = (f(0.0) * 255.0).round() as u8;
+  let g = (f(8.0) * 255.0).round() as u8;
+  let b = (f(4.0) * 255.0).round() as u8;
+  (r, g, b)
+}
+
+fn rgb_to_hex(r: u8, g: u8, b: u8) -> String {
+  format!("{:02x}{:02x}{:02x}", r, g, b)
+}
+
+fn generate_rainbow_colors(color_count: usize) -> Vec<String> {
+  let mut colors = Vec::new();
+  for i in 0..color_count {
+    let hue = (i as f64 / color_count as f64) * 360.0;
+    let (r, g, b) = hsl_to_rgb(hue, 1.0, 0.5);
+    colors.push(rgb_to_hex(r, g, b));
+  }
+  colors
+}
+
+fn get_color_chunks(colors: Vec<String>, chunk_size: usize) -> Vec<Vec<String>> {
+  colors
+    .chunks(chunk_size)
+    .map(|chunk| chunk.to_vec())
+    .collect()
+}
+
 #[allow(unused_assignments)]
 fn main() {
   let args = Args::parse();
-  let mut rainbow_colors: [&str; 71] = [
-    "ff0000", "ff1500", "ff2b00", "ff4000", "ff5600", "ff6b00", "ff8100", "ff9600", "ffac00",
-    "ffc100", "ffd700", "ffec00", "f8fb00", "e6ff00", "d0ff00", "bbff00", "a5ff00", "90ff00",
-    "7aff00", "65ff00", "4fff00", "3aff00", "24ff00", "0fff00", "03ff09", "00ff1b", "00ff31",
-    "00ff46", "00ff5c", "00ff71", "00ff87", "00ff9c", "00ffb2", "00ffc8", "00ffdd", "00fff3",
-    "00f5ff", "00dfff", "00caff", "00b4ff", "009fff", "0089ff", "0074ff", "005eff", "0049ff",
-    "0033ff", "001eff", "020bff", "0c00ff", "2200ff", "3700ff", "4d00ff", "6200ff", "7800ff",
-    "8d00ff", "a300ff", "b800ff", "ce00ff", "e300ff", "f700fd", "fe00ef", "ff00d9", "ff00c4",
-    "ff00ae", "ff0099", "ff0083", "ff006d", "ff0058", "ff0042", "ff002d", "ff0017",
-  ];
+  let mut rainbow_colors = generate_rainbow_colors(71);
   let api = HidApi::new().expect("Failed to create HID API");
   let mut found = false;
   for dev in api.device_list() {
@@ -113,7 +137,7 @@ fn main() {
           found = true;
           loop {
             if args.rainbow {
-              let color_chunks: Vec<&[&str]> = rainbow_colors.chunks(16).collect();
+              let color_chunks: Vec<Vec<String>> = get_color_chunks(rainbow_colors.clone(), 16);
               for (_i, chunk) in color_chunks.iter().enumerate() {
                 send_color_chunk(&device, chunk);
                 thread::sleep(Duration::from_millis(25));
