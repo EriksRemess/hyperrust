@@ -12,7 +12,9 @@ cargo install hyperrust
 
 ```bash
 hyperrust --help # show help
-hyperrust --color D17A00 # set color to orange
+hyperrust --color D17A00 # set color to orange, hex format or "#D17A00"
+hyperrust -a FF0000 -b FFFFFF # set animated gradient from red to white
+hyperrust --theme default # set theme, currently only default is available
 hyperrust --rainbow # rainbow effect
 hyperrust --rainbow & # run in background
 ```
