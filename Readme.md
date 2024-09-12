@@ -23,4 +23,3 @@ As app needs to be running all the time to keep the effect, it is recommended to
 
 ### udev rules
 If you are getting `Permission denied` error, you can add udev rules to fix it. Copy `99-hyperx.rules` to `/etc/udev/rules.d/99-hyperx.rules` and run `sudo udevadm control --reload-rules && sudo udevadm trigger` to apply the changes.
-```
