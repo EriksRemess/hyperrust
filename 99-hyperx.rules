@@ -1,0 +1,2 @@
+SUBSYSTEMS=="usb|hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0c8e", TAG+="uaccess", TAG+="HyperX_Alloy_Origins_60_HP"
+
