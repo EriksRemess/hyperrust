@@ -7,7 +7,7 @@ use clap::Parser;
 use colors::{apply_color, apply_gradient, apply_rainbow, apply_theme};
 use hid::get_device;
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
   /// Rainbow puke

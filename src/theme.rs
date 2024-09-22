@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct Theme {
   name: String,
   keys: Map<String, Value>,
@@ -24,6 +24,7 @@ pub fn get_theme_colors(name: &str) -> Result<Vec<String>, Box<dyn std::error::E
 
   if let Some(theme_str) = themes.get(name) {
     let theme: Theme = serde_json::from_str(theme_str)?;
+    println!("Theme: {}", theme.name);
     let parsed_theme: Vec<String> = parse_theme(theme);
     return Ok(parsed_theme);
   } else {
