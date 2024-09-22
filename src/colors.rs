@@ -65,10 +65,6 @@ fn get_color_chunks(colors: Vec<String>, chunk_size: usize) -> Vec<Vec<String>> 
     .collect()
 }
 
-fn get_color_value(color: &str) -> u32 {
-  u32::from_str_radix(color, 16).expect("Invalid hex color")
-}
-
 pub fn gradient(start_color: u32, end_color: u32) -> Vec<String> {
   let start_color = u32_to_rgb(start_color);
   let end_color = u32_to_rgb(end_color);
@@ -106,7 +102,7 @@ fn interpolate_color(start: (u8, u8, u8), end: (u8, u8, u8), factor: f64) -> (u8
   (r, g, b)
 }
 
-fn is_valid_hex_color(s: &str) -> bool {
+pub fn is_valid_hex_color(s: &str) -> bool {
   let s = s.trim_start_matches('#');
   if s.len() != 3 && s.len() != 6 {
       return false;
@@ -150,7 +146,7 @@ fn send_colors(device: &HidDevice, colors: Vec<String>) {
         let mut req = [0u8; 65];
         req[0x00] = 0x00;
         for (i, color) in chunk.iter().enumerate() {
-          let color_value = get_color_value(color);
+          let color_value = parse_color(color).unwrap();
           req[(i * 4) + 1] = 0x81;
           req[(i * 4) + 2] = ((color_value >> 16) & 0x000000FF) as u8;
           req[(i * 4) + 3] = ((color_value >> 8) & 0x000000FF) as u8;

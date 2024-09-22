@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
+use crate::colors::is_valid_hex_color;
 
 #[derive(Deserialize)]
 pub struct Theme {
@@ -118,6 +119,11 @@ pub fn parse_theme(theme: Theme) -> Vec<String> {
     match value {
       Some(v) => match v {
         Value::String(s) => {
+          if !is_valid_hex_color(s) {
+            println!("Invalid color value for key: {}", key);
+            result.push("000000".to_string());
+            continue;
+          }
           result.push(s.to_string());
         }
         _ => {
@@ -125,7 +131,8 @@ pub fn parse_theme(theme: Theme) -> Vec<String> {
         }
       },
       None => {
-        println!("Key not found: {}", key);
+        result.push("000000".to_string());
+        println!("Color for key not found: {}", key);
       }
     }
   }
