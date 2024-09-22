@@ -1,28 +1,28 @@
 use hidapi::{HidApi, HidDevice};
 use std::process;
 
-pub fn get_device(
-  vendor_id: u16,
-  product_id: u16
-) -> Option<HidDevice> {
+#[cfg(target_os = "windows")]
+pub const DEV_USAGE: u16 = 0xFF00;
+
+#[cfg(target_os = "windows")]
+pub const DEV_USAGE_PAGE: u16 = 0xFF90;
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub const DEV_USAGE: u16 = 0x6;
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub const DEV_USAGE_PAGE: u16 = 0x1;
+
+pub fn get_device(vendor_id: u16, product_id: u16) -> Option<HidDevice> {
   let api = HidApi::new().expect("Failed to create HID API");
   for dev in api.device_list() {
-
     if dev.vendor_id() == vendor_id
       && dev.product_id() == product_id
+      && dev.usage() == DEV_USAGE
+      && dev.usage_page() == DEV_USAGE_PAGE
     {
-      if cfg!(target_os = "windows")
-       && dev.interface_number() == 0x3 {
-        if let Ok(device) = dev.open_device(&api) {
-          return Some(device);
-       }
-      } else {
-        if dev.usage() == 0x6
-          && dev.usage_page() == 0x1 {
-          if let Ok(device) = dev.open_device(&api) {
-            return Some(device);
-          }
-        }
+      if let Ok(device) = dev.open_device(&api) {
+        return Some(device);
       }
     }
   }
