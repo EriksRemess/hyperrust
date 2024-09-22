@@ -28,8 +28,13 @@ struct Args {
 }
 
 fn main() {
+  ctrlc::set_handler(move || {
+    println!("\nExiting...");
+    std::process::exit(0);
+  })
+  .expect("Error setting Ctrl-C handler");
   let args = Args::parse();
-  if let Some(device) = get_device(1008, 3214, 6, 1) {
+  if let Some(device) = get_device(1008, 3214) {
     let color = args.color.unwrap_or_default();
     if let Some(ref theme_name) = args.theme {
       apply_theme(&device, theme_name);

@@ -3,19 +3,26 @@ use std::process;
 
 pub fn get_device(
   vendor_id: u16,
-  product_id: u16,
-  usage: u16,
-  usage_page: u16,
+  product_id: u16
 ) -> Option<HidDevice> {
   let api = HidApi::new().expect("Failed to create HID API");
   for dev in api.device_list() {
+
     if dev.vendor_id() == vendor_id
       && dev.product_id() == product_id
-      && dev.usage() == usage
-      && dev.usage_page() == usage_page
     {
-      if let Ok(device) = dev.open_device(&api) {
-        return Some(device);
+      if cfg!(target_os = "windows")
+       && dev.interface_number() == 0x3 {
+        if let Ok(device) = dev.open_device(&api) {
+          return Some(device);
+       }
+      } else {
+        if dev.usage() == 0x6
+          && dev.usage_page() == 0x1 {
+          if let Ok(device) = dev.open_device(&api) {
+            return Some(device);
+          }
+        }
       }
     }
   }
