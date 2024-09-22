@@ -105,7 +105,7 @@ fn interpolate_color(start: (u8, u8, u8), end: (u8, u8, u8), factor: f64) -> (u8
 pub fn is_valid_hex_color(s: &str) -> bool {
   let s = s.trim_start_matches('#');
   if s.len() != 3 && s.len() != 6 {
-      return false;
+    return false;
   }
   s.chars().all(|c| c.is_digit(16))
 }
