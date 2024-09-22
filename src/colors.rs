@@ -1,6 +1,5 @@
 use crate::hid;
 use crate::theme::get_theme_colors;
-use regex::Regex;
 use crate::utils::sleep;
 use hidapi::HidDevice;
 
@@ -107,9 +106,16 @@ fn interpolate_color(start: (u8, u8, u8), end: (u8, u8, u8), factor: f64) -> (u8
   (r, g, b)
 }
 
+fn is_valid_hex_color(s: &str) -> bool {
+  let s = s.trim_start_matches('#');
+  if s.len() != 3 && s.len() != 6 {
+      return false;
+  }
+  s.chars().all(|c| c.is_digit(16))
+}
+
 pub fn parse_color(color_str: &str) -> Result<u32, String> {
-  let valid_color = Regex::new(r"^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$").unwrap();
-  if !valid_color.is_match(color_str) {
+  if !is_valid_hex_color(color_str) {
     return Err("Invalid hex color".to_string());
   }
   let mut color_str = color_str.trim_start_matches('#').to_string();
