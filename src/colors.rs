@@ -47,15 +47,15 @@ pub fn apply_rainbow(device: &HidDevice) {
 }
 
 pub fn apply_theme(device: &HidDevice, theme_name: &str) {
-  if let Ok(colors) = get_theme_colors(theme_name) {
+  match get_theme_colors(theme_name) { Ok(colors) => {
     loop {
       send_colors(&device, colors.clone());
       sleep(400);
     }
-  } else {
+  } _ => {
     eprintln!("Invalid theme: {}", theme_name);
     std::process::exit(1);
-  }
+  }}
 }
 
 fn get_color_chunks(colors: Vec<String>, chunk_size: usize) -> Vec<Vec<String>> {

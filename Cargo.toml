@@ -1,7 +1,7 @@
 [package]
 name = "hyperrust"
 version = "0.1.6"
-edition = "2021"
+edition = "2024"
 description = "RGB utility for HyperX Alloy Origins 60 keyboard"
 license = "MIT"
 repository = "https://github.com/EriksRemess/hyperrust"
